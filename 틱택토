@@ -1,0 +1,50 @@
+def display_board(board):
+    print("-------------")
+    for i in range(3):
+        print(f"| {board[i*3]} | {board[i*3+1]} | {board[i*3+2]} |")
+        print("-------------")
+
+
+def input_OX():
+    while True:
+        p = input("사용될 문양을 입력하십시오(O?X): ")
+        if p in ['o','O']:
+            return 'O','X'
+        elif p in ['x','X']:
+            return 'X','O'
+        else:
+            print(f"{p}는 올바른 문양이 아닙니다. O나 X중에서 골라주세요")
+def input_POS():
+
+    return
+def VICTORY():
+
+
+    return
+def random_POS():
+
+
+
+    return
+
+if __name__ == "__main__":
+    board = ["*"] * 9
+    display_board(board)
+
+from tictactoe_func import *
+
+board = ['*'] * 9
+
+player,computer = input_OX()
+
+display_board()
+
+while True:
+    display_board(board)
+    pos = input_POS()
+    board[pos] = player
+    if VICTORY():
+        print("Player Win0")
+        exit()
+    pos = random_POS()
+    board[pos] = computer()
