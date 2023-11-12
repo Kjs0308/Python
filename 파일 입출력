@@ -1,0 +1,17 @@
+#파일 입출력 연습
+
+#file = open("test.txt",'r')    #open("파일이름.확장자", "모드", encoding="utf8")
+                               # 'w':(새로)쓰기,'r':읽기,'a':쓰기,추가하기
+#line = file.read()             # 해당 파일에 있는 모든 문자들을 갖고온다.
+#while True:
+#    line = file.readline().rstrip() # Hello\n" -> "Every one\n" ...
+#    print(line)
+#    if line == '':
+#        break
+#line = file.readlines()
+
+#print(line,type(line))
+#file.close()
+
+with open("log_in.txt", 'r', encoding='utf8') as file:
+    print(file.readlines())
