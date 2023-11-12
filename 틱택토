@@ -6,9 +6,6 @@ def DRAW(board):
         return True
     return False
 
-def log_in(input_id,input_pw):
-    return
-
 def display_board(board):
     print("-------------")
     for i in range(3):
@@ -64,6 +61,21 @@ if __name__ == "__main__":
     display_board(board)
     print(VICTORY(board, 'O'))
 
+def log_in(input_id,input_pw):
+    with open("log_in.txt", 'r', encoding='utf8') as file:
+        DB = file.readlines()
+        id = ''
+        pw = ''
+        for db in DB:
+            key,value = db.split()
+            if key == 'ID:':
+                id = value.rstrip()
+            else:
+                pw = value.rstrip()
+                if id == input_id and pw == input_pw:
+                    return True
+        return False
+
 
 #main.py
 from tictactoe_func import *
@@ -73,7 +85,7 @@ while True:
     try_cnt -= 1
     id = input("아이디를 입력하시오: ")
     pw = input("비밀번호를 입력하시오: ")
-    if log_in():
+    if log_in(id,pw):
         print(f"{id}님 로그인 되었습니다.")
         break
     print(f"시도횟수 {try_cnt}회 남았습니다.")
@@ -97,6 +109,10 @@ while True:
 
     pos = random_POS(board)
     board[pos] = computer
+    display_board(board)
+    if VICTORY(board,computer):
+        print("Computer Win!")
+        exit()
     display_board(board)
     if VICTORY(board,computer):
         print("Computer Win!")
