@@ -1,3 +1,14 @@
+#tictactoe_func
+import random
+
+def DRAW(board):
+    if '*' not in board:
+        return True
+    return False
+
+def log_in(input_id,input_pw):
+    return
+
 def display_board(board):
     print("-------------")
     for i in range(3):
@@ -14,37 +25,79 @@ def input_OX():
             return 'X','O'
         else:
             print(f"{p}는 올바른 문양이 아닙니다. O나 X중에서 골라주세요")
-def input_POS():
+def input_POS(board):
+    while True:
+        p = int(input("놓을 자리를 입력하시오: "))
+        if 1 <= p <= 9:
+            if board[p - 1] == '*':
+                return p - 1
+            else:
+                print("이미 입력된 자리입니다")
+        else:
+            print("1부터 9사이의 정수를 입력하시오")
 
-    return
-def VICTORY():
+def VICTORY(board,user):
+    for i in range(3):
+        if board[i * 3] == board[i * 3 + 1] == board[i * 3 + 2] == user:
+            return True
+        elif board[i] == board[i+3] == board[i+6] == user:
+            return True
+    if board[0] == board[4] == board[8] == user:
+        return True
+    elif board[2] == board[4] == board[6] == user:
+        return True
+    return False
 
 
-    return
-def random_POS():
+def random_POS(board):
+    while True:
+        p = random.randint(0, 8)
+        if board[p] == '*':
+            return p
 
-
-
-    return
 
 if __name__ == "__main__":
     board = ["*"] * 9
+    board[2] = 'O'
+    board[1] = 'O'
+    board[0] = 'O'
     display_board(board)
+    print(VICTORY(board, 'O'))
 
+
+#main.py
 from tictactoe_func import *
-
-board = ['*'] * 9
-
-player,computer = input_OX()
-
-display_board()
+try_cnt = 3
 
 while True:
-    display_board(board)
-    pos = input_POS()
-    board[pos] = player
-    if VICTORY():
-        print("Player Win0")
+    try_cnt -= 1
+    id = input("아이디를 입력하시오: ")
+    pw = input("비밀번호를 입력하시오: ")
+    if log_in():
+        print(f"{id}님 로그인 되었습니다.")
+        break
+    print(f"시도횟수 {try_cnt}회 남았습니다.")
+    if try_cnt == 0:
+        print("시도횟수를 모두 소진하였습니다. 종료합니다.")
         exit()
-    pos = random_POS()
-    board[pos] = computer()
+
+board = ["*"] * 9
+player,computer = input_OX()
+display_board(board)
+
+while True:
+    pos = input_POS(board)
+    board[pos] = player
+    if VICTORY(board,player):
+        print("Player Win!")
+        exit()
+    if DRAW(board):
+        print("DRAW")
+        exit()
+
+    pos = random_POS(board)
+    board[pos] = computer
+    display_board(board)
+    if VICTORY(board,computer):
+        print("Computer Win!")
+        exit()
