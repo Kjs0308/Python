@@ -1,0 +1,10 @@
+def solution(bandage, health, attacks):
+    answer = 0
+    bandage = [t, x, y]
+    health = [30, 20, 20, 5]
+    attacks = [[10, 15, 5, 5], [15, 16, 6], [16, 16, 6], [2, 2]]
+    for i in range(11):
+
+
+
+
