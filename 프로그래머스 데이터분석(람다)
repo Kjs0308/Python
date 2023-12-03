@@ -1,0 +1,45 @@
+#람다 사용
+def solution(data, ext, val_ext, sort_by):
+    new_data = []
+    standard = ["code","date","maximum","remain"]
+    for d in data:
+        idx = standard.index(ext)
+        if d[idx] < val_ext:
+            new_data.append(d)
+
+    idx = standard.index(sort_by)
+    new_data.sort(key=lambda x : x[idx])
+    return new_data 
+
+data = [[1, 20300104, 100, 80], [2, 20300804, 847, 37], [3, 20300401, 10, 8]]
+ext = "date"
+val_ext = 20300501
+sort_by = "remain"
+print(solution(data, ext, val_ext, sort_by))
+
+#람다 x
+def solution(data, ext, val_ext, sort_by):
+    new_data = []
+    standard = ["code","date","maximum","remain"]
+    for d in data:
+        idx = standard.index(ext)
+        if d[idx] < val_ext:
+            new_data.append(d)
+    print(new_data)
+
+    idx = standard.index(sort_by)
+    for i in range(len(new_data)):
+        new_data[i] = [new_data[i][idx], new_data[i]]
+    print(new_data)
+    new_data.sort()
+    print(new_data)
+    answer = []
+    for _data in new_data:
+        answer.append(_data[1])
+    return answer
+
+data = [[1, 20300104, 100, 80], [2, 20300804, 847, 37], [3, 20300401, 10, 8]]
+ext = "date"
+val_ext = 20300501
+sort_by = "remain"
+print(solution(data, ext, val_ext, sort_by))
