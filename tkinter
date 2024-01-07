@@ -11,6 +11,8 @@ l = tk.Label(window,width=20, height = 20, text = "HELLO WORLD")
 #l.grid(column=0,row=0)     #격자
 #l.place(x = 100,y = 100)
 
+f1 = tk.Frame(window,width=20, height = 20, relief = "solid", bd=2)
+f1.pack(side="left")
 
 
 window.mainloop()
