@@ -13,3 +13,19 @@ for i in range(3, N):
     DP[i] = max(DP[i-3] + stair[i-1] + stair[i], DP[i-2]+stair[i]) 
 
 print(DP[N-1])
+
+# 백준 RGB거리
+N = int(input())          # 집의 수 입력받기
+RGB = []                  # RGB => DP List
+
+for i in range(N):
+    color = list(map(int,input().split()))             # 기저값 입력받기
+    RGB.append(color)                                  # 리스트 자체를 입력받는다.  [[10,20,30],[40,50,60].....]
+
+
+for i in range(1,N):
+    for j in range(3):
+        Before = [ RGB[i-1][m] for m in range(3) if m != j ]    # 그 전 집의 색을 제외한 두 색(까지의 가격 총합) 이 할당된다.
+        RGB[i][j] += min(Before)                                # 두 색깔 중 최솟값을 넣어주면 된다.
+
+print(min(RGB[N-1]))
