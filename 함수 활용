@@ -1,0 +1,17 @@
+def alnum_parse(string):
+    a = ""
+    low = "abcdefghijklmnopqrstuvwxyz"
+    up = low.upper()
+    nums = ''.join(map(str,range(10)))
+    valid_data = low + up + nums
+
+    for i in range(len(string)):
+        if string[i] in valid_data:
+            a = a + string[i]
+
+    return a
+
+
+string = 'axw92!WS_ 12~'
+result = alnum_parse(string)
+print(result)  #axw92WS12
