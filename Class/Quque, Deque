@@ -1,0 +1,129 @@
+###################################Quque
+# # stack, queue, deque
+# # stack: 가장 최근에 들어온 데이터가 가장 먼저 나가는 구조
+# # element라는 요소를 생성해 그 안에 입력받은 data와 다음 element를 가리키는 link를 담은채 stack에 추가된다.
+# # stack은 기본적으로 가장 최근에 들어온, 최상위 element를 가리키는 top이라는 객체가 존재한다.
+# class Element:
+#     def __init__(self,data,link = None):
+#         self.data = data
+#         self.link = link
+#
+# class Stack:                    # rev_value : 1
+#     def __init__(self):         #         self.top
+#         self.top = None         #
+#
+#     def add(self,data):
+#         if self.top is None:
+#             elem = Element(data)
+#         else:           # 이미 elem에 있는경우
+#             elem = Element(data,self.top)  # 1. 방금 만든 elem의 link를 stack의 가장 최근에 들어온 elem을 가리킨다.
+#         self.top = elem                # 2. self.top이 방금 만든 elem을 가리킨다.
+#
+#     def pop(self):
+#         if self.top is None:
+#             return None
+#         else:
+#             ret_value = self.top.data
+#             self.top = self.top.link
+#             return ret_value
+#
+# s1 = Stack()
+# # <1, 2, 3>
+# # <>
+# for i in range(1,4):
+#     s1.add(i)        # 1 2 3
+# for _ in range(3):
+#     print(s1.pop())  # 3 2 1
+#
+
+class Element:
+    def __init__(self,data,link = None):
+        self.data = data
+        self.link = link
+class Queue:
+    def __init__(self):
+        self.rear = None
+        self.front = None
+
+    def append(self,data):
+        if self.rear is None:
+            elem = Element(data)
+            self.rear = self.front = elem
+        else:
+            elem = Element(data)
+            self.rear.link = elem
+            self.rear = elem
+
+    def pop(self):
+        if self.front is None:
+            return None
+        elif  self.rear == self.front:    # 1개 남았을 때
+            ret_value = self.front.data
+            self.rear = self.front = None
+            return ret_value
+        else:   # 여러개 남았을때
+            ret_value =self.front.data
+            self.front = self.front.link
+            return ret_value
+
+
+Q = Queue()
+for i in range(1,6):
+    Q.append(i)
+    # 543 2  1
+for _ in range(5):
+    print(Q.pop())
+
+
+  
+###################################Deque
+class Element:
+    def __init__(self,data,left,right):
+        self.data = data
+        self.left = left
+        self.right = right
+
+class Deque:
+    def __init__(self):
+        self.rear = None
+        self.front = None
+
+    def rear_insert(self,data):
+        elem = Element(data,None,self.rear)
+        if self.rear is None:
+            self.rear = self.front = elem
+        else:
+            self.rear.left = elem
+            self.rear = elem
+
+    def front_insert(self,data):
+        elem = Element(data,self.front,None)
+        if self.front is None:
+            self.front = self.rear = elem
+        else:
+            self.front.right = elem
+            self.front = elem
+
+    def pop_rear(self):
+        if self.rear is None:
+            return None
+        elif self.rear == self.front:
+            ret_value = self.rear.data
+            self.rear = self.front = None
+            return ret_value
+        else:
+            ret_value = self.rear.data
+            self.rear = self.rear.right
+            self.rear.left = None
+            return ret_value
+
+d = Deque()
+
+for i in range(1,11):
+    if i % 2 == 0:
+        d.rear_insert(i)
+    else:
+        d.front_insert(i)
+
+for _ in range(10):
+    print(d.pop_rear(), end = ' ')
