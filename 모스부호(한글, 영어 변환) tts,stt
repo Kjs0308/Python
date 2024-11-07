@@ -1,0 +1,339 @@
+# 모스부호/영어 변환기(STT/TTS 기능 포함) 
+import speech_recognition as sr
+from gtts import gTTS
+import pygame
+import os
+
+class MorseConverter:
+    def __init__(self):
+        # 한글 자모음 모스부호 매핑
+        self.ko_to_morse = {
+            # 자음
+            'ㄱ': '.-..', 'ㄴ': '.-.', 'ㄷ': '-..', 'ㄹ': '...-',
+            'ㅁ': '--', 'ㅂ': '.--', 'ㅅ': '--.', 'ㅇ': '-.-',
+            'ㅈ': '..-', 'ㅊ': '-.-.', 'ㅋ': '-..', 'ㅌ': '--.',
+            'ㅍ': '.--.', 'ㅎ': '---',
+            # 모음
+            'ㅏ': '.', 'ㅑ': '..', 'ㅓ': '-', 'ㅕ': '--',
+            'ㅗ': '...', 'ㅛ': '.-', 'ㅜ': '...', 'ㅠ': '-..',
+            'ㅡ': '--.', 'ㅣ': '..-',
+            # 특수문자
+            ' ': ' / '
+        }
+        # 모스부호에서 한글로의 매핑
+        self.morse_to_ko = {v: k for k, v in self.ko_to_morse.items()}
+        
+        # STT를 위한 음성 인식기 초기화
+        self.recognizer = sr.Recognizer()
+        
+    def decompose_hangul(self, char):
+        """한글 문자를 자모음으로 분해"""
+        if '가' <= char <= '힣':
+            code = ord(char) - ord('가')
+            cho = code // (21 * 28)
+            jung = (code % (21 * 28)) // 28
+            jong = code % 28
+            
+            CHOSUNG = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 
+                       'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
+            JUNGSUNG = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 
+                        'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ']
+            JONGSUNG = [''] + ['ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 
+                              'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 
+                              'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
+            
+            return [CHOSUNG[cho], JUNGSUNG[jung]] + ([JONGSUNG[jong]] if jong > 0 else [])
+        return [char]
+
+    def text_to_morse(self, text):
+        """한글 텍스트를 모스부호로 변환"""
+        morse_code = []
+        for char in text:
+            jamo = self.decompose_hangul(char)
+            morse_char = []
+            for j in jamo:
+                if j in self.ko_to_morse:
+                    morse_char.append(self.ko_to_morse[j])
+            if morse_char:
+                morse_code.append(' '.join(morse_char))
+        return '  '.join(morse_code)
+
+        def text_to_morseEN(self, text):
+            morse_code = []
+            morse_code_dict = {
+                'a': '.-',    'b': '-...',  'c': '-.-.',  'd': '-..',   'e': '.',  
+                'f': '..-.',  'g': '--.',   'h': '....',  'i': '..',    'j': '.---',
+                'k': '-.-',   'l': '.-..',  'm': '--',    'n': '-.',    'o': '---',
+                'p': '.--.',  'q': '--.-',  'r': '.-.',   's': '...',   't': '-',
+                'u': '..-',   'v': '...-',  'w': '.--',   'x': '-..-',  'y': '-.--',
+                'z': '--..',
+                '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-', 
+                '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.'
+            }
+            for char in text:
+                if char != ' ':
+                    morse_code.append(morse_code_dict[char])
+            return '  '.join(morse_code)
+
+    
+    def morse_to_text(self, morse):
+        """모스부호를 한글 텍스트로 변환"""
+        text = []
+        morse_chars = morse.split('  ')
+        for morse_char in morse_chars:
+            jamo = morse_char.split(' ')
+            char = ''
+            for j in jamo:
+                if j in self.morse_to_ko:
+                    char += self.morse_to_ko[j]
+            text.append(char)
+        return ''.join(text)
+
+    def speech_to_text(self):
+        """음성을 텍스트로 변환 (STT)"""
+        with sr.Microphone() as source:
+            print("\n말씀해 주세요 (마이크에 대고 말씀하세요)...")
+            self.recognizer.adjust_for_ambient_noise(source, duration=1)
+            
+            try:
+                audio = self.recognizer.listen(source, timeout=5, phrase_time_limit=5)
+                print("음성 인식 중...")
+                text = self.recognizer.recognize_google(audio, language='en_US')
+                return text
+                
+            except sr.WaitTimeoutError:
+                return "시간 초과: 음성이 감지되지 않았습니다."
+            except sr.UnknownValueError:
+                return "인식 실패: 음성을 이해할 수 없습니다."
+            except sr.RequestError:
+                return "오류: Google Speech Recognition 서비스에 접근할 수 없습니다. 인터넷 연결을 확인하세요."
+
+    def text_to_speech(self, text):
+        """텍스트를 음성으로 변환 (TTS)"""
+        try:
+            tts = gTTS(text=text, lang='ko')
+            temp_file = "temp_speech.mp3"
+            tts.save(temp_file)
+    
+            # pygame을 사용하여 음성 재생
+            pygame.mixer.init()
+            pygame.mixer.music.load(temp_file)
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():  # 음악이 재생 중일 때까지 대기
+                pass
+    
+            try:
+                os.remove(temp_file)
+            except Exception as e:
+                print(f"파일 삭제 오류: {str(e)}")
+    
+            return True
+        except Exception as e:
+            print(f"TTS 오류: {str(e)}")
+            return False
+
+
+def main():
+    converter = MorseConverter()
+    
+    while True:
+        print("\n=== 한글 모스부호 변환기 (STT/TTS 지원) ===")
+        print("1. 한글 → 모스부호")
+        print("2. 모스부호 → 한글")
+        print("3. 음성 → 텍스트 → 모스부호 (STT)")
+        print("4. 텍스트 → 음성 (TTS)")
+        print("5. 종료")
+        
+        choice = input("\n선택하세요 (1-5): ")
+        
+        if choice == '1':
+            text = input("한글을 입력하세요: ")
+            morse = converter.text_to_morse(text)
+            print("모스부호: ", morse)
+            
+        elif choice == '2':
+            morse = input("모스부호를 입력하세요 (부호는 공백으로 구분): ")
+            text = converter.morse_to_text(morse)
+            print("변환된 텍스트: ", text)
+            
+        elif choice == '3':
+            text = converter.speech_to_text()
+            print("인식된 텍스트:", text)
+            if not text.startswith(("시간 초과", "인식 실패", "오류")):
+                morse = converter.text_to_morseEN(text)
+                print("변환된 모스부호:", morse)
+                
+        elif choice == '4':
+            text = input("음성으로 변환할 텍스트를 입력하세요: ")
+            converter.text_to_speech(text)
+            
+        elif choice == '5':
+            print("프로그램을 종료합니다.")
+            break
+            
+        else:
+            print("잘못된 선택입니다. 다시 선택해주세요.")
+
+if __name__ == "__main__":
+    main()
+
+# 모스부호/한글 변환기(STT/TTS 기능 포함)
+import speech_recognition as sr
+from gtts import gTTS
+import pygame
+import os
+
+class MorseConverter:
+    def __init__(self):
+        # 한글 자모음 모스부호 매핑
+        self.ko_to_morse = {
+            # 자음
+            'ㄱ': '.-..', 'ㄴ': '.-.', 'ㄷ': '-..', 'ㄹ': '...-',
+            'ㅁ': '--', 'ㅂ': '.--', 'ㅅ': '--.', 'ㅇ': '-.-',
+            'ㅈ': '..-', 'ㅊ': '-.-.', 'ㅋ': '-..', 'ㅌ': '--.',
+            'ㅍ': '.--.', 'ㅎ': '---',
+            # 모음
+            'ㅏ': '.', 'ㅑ': '..', 'ㅓ': '-', 'ㅕ': '--',
+            'ㅗ': '...', 'ㅛ': '.-', 'ㅜ': '...', 'ㅠ': '-..',
+            'ㅡ': '--.', 'ㅣ': '..-',
+            # 특수문자
+            ' ': ' / '
+        }
+        # 모스부호에서 한글로의 매핑
+        self.morse_to_ko = {v: k for k, v in self.ko_to_morse.items()}
+        
+        # STT를 위한 음성 인식기 초기화
+        self.recognizer = sr.Recognizer()
+        
+    def decompose_hangul(self, char):
+        """한글 문자를 자모음으로 분해"""
+        if '가' <= char <= '힣':
+            code = ord(char) - ord('가')
+            cho = code // (21 * 28)
+            jung = (code % (21 * 28)) // 28
+            jong = code % 28
+            
+            CHOSUNG = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 
+                       'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
+            JUNGSUNG = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 
+                        'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ']
+            JONGSUNG = [''] + ['ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 
+                              'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 
+                              'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
+            
+            return [CHOSUNG[cho], JUNGSUNG[jung]] + ([JONGSUNG[jong]] if jong > 0 else [])
+        return [char]
+
+    def text_to_morse(self, text):
+        """한글 텍스트를 모스부호로 변환"""
+        morse_code = []
+        for char in text:
+            jamo = self.decompose_hangul(char)
+            morse_char = []
+            for j in jamo:
+                if j in self.ko_to_morse:
+                    morse_char.append(self.ko_to_morse[j])
+            if morse_char:
+                morse_code.append(' '.join(morse_char))
+        return '  '.join(morse_code)
+
+    def morse_to_text(self, morse):
+        """모스부호를 한글 텍스트로 변환"""
+        text = []
+        morse_chars = morse.split('  ')
+        for morse_char in morse_chars:
+            jamo = morse_char.split(' ')
+            char = ''
+            for j in jamo:
+                if j in self.morse_to_ko:
+                    char += self.morse_to_ko[j]
+            text.append(char)
+        return ''.join(text)
+
+    def speech_to_text(self):
+        """음성을 텍스트로 변환 (STT)"""
+        with sr.Microphone() as source:
+            print("\n말씀해 주세요 (마이크에 대고 말씀하세요)...")
+            self.recognizer.adjust_for_ambient_noise(source, duration=1)
+            
+            try:
+                audio = self.recognizer.listen(source, timeout=5, phrase_time_limit=5)
+                print("음성 인식 중...")
+                text = self.recognizer.recognize_google(audio, language='ko-KR')
+                return text
+                
+            except sr.WaitTimeoutError:
+                return "시간 초과: 음성이 감지되지 않았습니다."
+            except sr.UnknownValueError:
+                return "인식 실패: 음성을 이해할 수 없습니다."
+            except sr.RequestError:
+                return "오류: Google Speech Recognition 서비스에 접근할 수 없습니다. 인터넷 연결을 확인하세요."
+
+    def text_to_speech(self, text):
+        """텍스트를 음성으로 변환 (TTS)"""
+        try:
+            tts = gTTS(text=text, lang='ko')
+            temp_file = "temp_speech.mp3"
+            tts.save(temp_file)
+    
+            # pygame을 사용하여 음성 재생
+            pygame.mixer.init()
+            pygame.mixer.music.load(temp_file)
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():  # 음악이 재생 중일 때까지 대기
+                pass
+    
+            try:
+                os.remove(temp_file)
+            except Exception as e:
+                print(f"파일 삭제 오류: {str(e)}")
+    
+            return True
+        except Exception as e:
+            print(f"TTS 오류: {str(e)}")
+            return False
+
+
+def main():
+    converter = MorseConverter()
+    
+    while True:
+        print("\n=== 한글 모스부호 변환기 (STT/TTS 지원) ===")
+        print("1. 한글 → 모스부호")
+        print("2. 모스부호 → 한글")
+        print("3. 음성 → 텍스트 → 모스부호 (STT)")
+        print("4. 텍스트 → 음성 (TTS)")
+        print("5. 종료")
+        
+        choice = input("\n선택하세요 (1-5): ")
+        
+        if choice == '1':
+            text = input("한글을 입력하세요: ")
+            morse = converter.text_to_morse(text)
+            print("모스부호: ", morse)
+            
+        elif choice == '2':
+            morse = input("모스부호를 입력하세요 (부호는 공백으로 구분): ")
+            text = converter.morse_to_text(morse)
+            print("변환된 텍스트: ", text)
+            
+        elif choice == '3':
+            text = converter.speech_to_text()
+            print("인식된 텍스트:", text)
+            if not text.startswith(("시간 초과", "인식 실패", "오류")):
+                morse = converter.text_to_morse(text)
+                print("변환된 모스부호:", morse)
+                
+        elif choice == '4':
+            text = input("음성으로 변환할 텍스트를 입력하세요: ")
+            converter.text_to_speech(text)
+            
+        elif choice == '5':
+            print("프로그램을 종료합니다.")
+            break
+            
+        else:
+            print("잘못된 선택입니다. 다시 선택해주세요.")
+
+if __name__ == "__main__":
+    main()
