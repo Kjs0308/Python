@@ -1,1 +1,124 @@
+###################### Queue(reverse)
+class Element:
+    def __init__(self,data,link = None):
+        self.data = data
+        self.link = link
 
+class Queue:
+    def __init__(self):
+        self.rear = None
+        self.front = None
+
+    def append(self,data):
+        if self.rear is None:
+            elem = Element(data)
+            self.rear = self.front = elem
+        else:
+            elem = Element(data)
+            self.rear.link = elem
+            self.rear = elem
+
+    def pop(self):
+        if self.front is None:
+            return None
+        elif  self.rear == self.front:    # 1개 남았을 때
+            ret_value = self.front.data
+            self.rear = self.front = None
+            return ret_value
+        else:   # 여러개 남았을때
+            ret_value =self.front.data
+            self.front = self.front.link
+            return ret_value
+
+    def reverse(self):
+        prev = None
+        curr = self.front
+
+        while curr:
+            next = curr.link
+            curr.link = prev
+            prev = curr
+            curr = next
+
+        self.rear,self.front = self.front,self.rear
+
+Q = Queue()
+for i in range(1,6):
+    Q.append(i)
+    # 5 4 3 2  1
+Q.reverse()
+
+for _ in range(5):
+    print(Q.pop())
+
+
+################# Deque(reverse)  
+class Element:
+    def __init__(self,data,left,right):
+        self.data = data
+        self.left = left
+        self.right = right
+
+class Deque:
+    def __init__(self):
+        self.rear = None
+        self.front = None
+
+    def rear_insert(self,data):
+        elem = Element(data,None,self.rear)
+        if self.rear is None:
+            self.rear = self.front = elem
+        else:
+            self.rear.left = elem
+            self.rear = elem
+
+    def front_insert(self,data):
+        elem = Element(data,self.front,None)
+        if self.front is None:
+            self.front = self.rear = elem
+        else:
+            self.front.right = elem
+            self.front = elem
+
+    def pop_rear(self):
+        if self.rear is None:
+            return None
+        elif self.rear == self.front:
+            ret_value = self.rear.data
+            self.rear = self.front = None
+            return ret_value
+        else:
+            ret_value = self.rear.data
+            self.rear = self.rear.right
+            self.rear.left = None
+            return ret_value
+
+    def pop_front(self):
+        if self.front is None:
+            return None
+        elif self.front == self.rear:
+            ret_value = self.front.data
+            self.front = self.front = None
+            return ret_value
+
+    def reverse(self):
+        curr = self.front
+
+        while curr:
+            curr.right,curr.left = curr.left,curr.right
+            curr = curr.right
+
+        self.rear,self.front = self.front,self.rear
+
+d = Deque()
+
+for i in range(1,11):
+    if i % 2 == 0:
+        d.rear_insert(i)
+    else:
+        d.front_insert(i)
+
+d.reverse()
+
+for _ in range(10):
+    print(d.pop_rear(), end = ' ')
